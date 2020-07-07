@@ -4,5 +4,6 @@ const CONNECTION_STRING = require('../constants/constants');
 mongoose.connect(CONNECTION_STRING, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useCreateIndex: true
+    useCreateIndex: true,
+    useFindAndModify: false
 });
