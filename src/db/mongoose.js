@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const CONNECTION_STRING = require('../constants/constants');
+const { CONNECTION_STRING } = require('../constants/constants');
 
 mongoose.connect(CONNECTION_STRING, {
     useNewUrlParser: true,
