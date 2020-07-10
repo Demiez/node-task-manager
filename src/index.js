@@ -25,6 +25,10 @@ app.use(express.json()); //parces automatically to json
 app.use(userRouter);
 app.use(taskRouter);
 
+app.get('/', (req, res) => {
+    res.send('Welcome to Task Manager')
+})
+
 app.listen(port, () => {
     console.log('Server is up on port ' + port);
 });
