@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-const { CONNECTION_STRING } = require('../constants/constants');
 
-mongoose.connect(CONNECTION_STRING, {
+mongoose.connect(process.env.MONGO_CONNECTION_STRING, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,

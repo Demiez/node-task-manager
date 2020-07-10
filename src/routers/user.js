@@ -3,6 +3,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const User = require('../models/user');
 const auth = require('../middleware/auth');
+const { sendWelcomeEmail, sendByeEmail } = require('../services/nodemailer');
 
 const router = new express.Router();
 const upload = multer({
@@ -11,19 +12,19 @@ const upload = multer({
         fileSize: 1_000_000
     },
     fileFilter(req, file, cb) {
-        if(!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
             return cb(new Error('Please upload jpg, jpeg or png image'));
         }
         cb(undefined, true);
     }
-})
+});
 
 router.post('/users', async (req, res) => {
     const user = new User(req.body);
 
     try {
         await user.save();
-
+        sendWelcomeEmail(user.email, user.name);
         const token = await user.generateAuthToken();
 
         res.status(201).send({ user, token });
@@ -100,6 +101,7 @@ router.patch('/users/me', auth, async (req, res) => {
 router.delete('/users/me', auth, async (req, res) => {
     try {
         await req.user.remove();
+        sendByeEmail(req.user.email, req.user.name);
 
         res.send(req.user);
     } catch (e) {
@@ -110,15 +112,15 @@ router.delete('/users/me', auth, async (req, res) => {
 router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
     //req.user.avatar = req.file.buffer;
     const buffer = await sharp(req.file.buffer)
-        .resize({width: 250, height: 250})
+        .resize({ width: 250, height: 250 })
         .png()
         .toBuffer();
-    
+
     req.user.avatar = buffer;
     await req.user.save();
     res.send();
 }, (error, req, res, next) => {
-    res.status(400).send({error: error.message});
+    res.status(400).send({ error: error.message });
 });
 
 router.delete('/users/me/avatar', auth, async (req, res) => {
@@ -135,9 +137,9 @@ router.get('/users/:id/avatar', async (req, res) => {
             throw new Error();
         }
 
-        res.set('Content-Type','image/png');
+        res.set('Content-Type', 'image/png');
         res.send(user.avatar);
-    
+
     } catch (e) {
         res.status(404).send();
     }

@@ -4,7 +4,7 @@
 
 const { MongoClient, ObjectID } = require('mongodb');
 
-const connectionURL = 'mongodb://127.0.0.1:27017';
+const connectionURL = provess.env.MONGO_CONNECTION_STRING;
 const databaseName = 'task-manager';
 
 // const id = new ObjectID();
