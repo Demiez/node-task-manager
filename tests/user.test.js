@@ -80,5 +80,47 @@ test('Should not delete account for not authenticated user', async () => {
     await request(app)
         .delete('/users/me')
         .send()
-        .expect(401)
-})
+        .expect(401);
+});
+
+test('Database should be changed correctly', async () => {
+    const response = await request(app)
+        .post('/users')
+        .send({
+            name: 'Dmytro',
+            email: 'dmytro@example.com',
+            password: 'MyPass123!',
+        })
+    const user = await User.findById(response.body.user._id);
+    expect(user).not.toBeNull();
+    //expect(response.body.user.name).toBe('Dmytro');
+    expect(response.body).toMatchObject({
+        user: {
+            name: 'Dmytro',
+            email: 'dmytro@example.com',
+        },
+        token: user.tokens[0].token
+    });
+    expect(user.password).not.toBe('MyPass123!');
+});
+
+test('Database should save new token correctly', async () => {
+    const response = await request(app)
+        .post('/users/login')
+        .send({
+            email: userOne.email,
+            password: userOne.password,
+        });
+    const user = await User.findById(userOneId);
+    expect(response.body.token).toBe(user.tokens[1].token);
+});
+
+test('Database should not contain deleted user', async () => {
+    await request(app)
+        .delete('/users/me')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send();
+    const user = await User.findById(userOneId);
+    expect(user).toBeNull();
+});
+
