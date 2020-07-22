@@ -124,3 +124,37 @@ test('Database should not contain deleted user', async () => {
     expect(user).toBeNull();
 });
 
+test('Should upload image for avatar', async () => {
+    await request(app)
+        .post('/users/me/avatar')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .attach('avatar', 'tests/fixtures/profile_avatar.jpg')
+        .expect(200);
+    
+    const user = await User.findById(userOneId);
+    expect(user.avatar).toEqual(expect.any(Buffer));
+});
+
+test('Should update valid user fields', async () => {
+    await request(app)
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            name: 'Bob'
+        })
+        .expect(200);
+
+    const user = await User.findById(userOneId);
+    expect(user.name).toEqual('Bob');
+});
+
+test('Should not update invalid user fields', async () => {
+    await request(app)
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            experience: 'middle'
+        })
+        .expect(400);
+})
+
